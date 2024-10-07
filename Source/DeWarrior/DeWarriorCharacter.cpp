@@ -13,6 +13,8 @@
 #include "Animation/AnimInstance.h"
 #include "TimerManager.h"
 #include "OpenAttackNotify.h"
+#include "Sound/SoundCue.h"
+#include "Kismet/GameplayStatics.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -192,6 +194,13 @@ void ADeWarriorCharacter::ProceedAttackAnimation()
 			}
 			// Bind to the delegate that is called when any montage ends
 			AnimInstance->OnMontageEnded.AddDynamic(this, &ADeWarriorCharacter::OnComboMontageEnded);
+
+			if (ComboSounds.IsValidIndex(this->m_curAttackCount) && ComboSounds[this->m_curAttackCount])
+			{
+				// Play the sound at the character's location
+				UGameplayStatics::PlaySoundAtLocation(this, ComboSounds[this->m_curAttackCount], GetActorLocation());
+			}
+
 			this->m_bIsComboWindowOpen = false;
 		}
 	}

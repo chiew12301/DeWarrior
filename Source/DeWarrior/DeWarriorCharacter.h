@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
+#include "Sound/SoundCue.h"
 #include "DeWarriorCharacter.generated.h"
 
 class USpringArmComponent;
@@ -51,6 +52,9 @@ class ADeWarriorCharacter : public ACharacter
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	TArray<UAnimMontage*> ComboMontages;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Audio")
+	TArray<USoundCue*> ComboSounds;
 
 	ADeWarriorCharacter();
 protected:
