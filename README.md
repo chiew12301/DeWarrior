@@ -4,3 +4,5 @@ Task Completed:
 - Combo System C++
 - Animation Notify and Notify State (Combo Return State and also Generation of Collider)
 - Sound Play when Each attack played.
+- Envrionment.
+- Simple Enemy AI with Nav Mesh.
