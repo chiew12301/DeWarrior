@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
+#include "AIAgent.h"
 #include "DeWarriorChaAttackNotifyState.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "DrawDebugHelpers.h"
@@ -57,6 +58,15 @@ void UDeWarriorChaAttackNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp,
     if (GeneratedBoxCollider)
     {
         GeneratedBoxCollider->DestroyComponent();
+    }
+}
+
+void UDeWarriorChaAttackNotifyState::OnHitboxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+    if (OtherActor && OtherActor->IsA(AAIAgent::StaticClass()))
+    {
+        OtherActor->Destroy();
+        UE_LOG(LogTemp, Warning, TEXT("AIAgent destroyed!"));
     }
 }
 
