@@ -238,18 +238,6 @@ void ADeWarriorCharacter::OnComboMontageEnded(UAnimMontage* Montage, bool bInter
 			AnimInstance->OnMontageEnded.RemoveDynamic(this, &ADeWarriorCharacter::OnComboMontageEnded);
 		}
 	}
-	//if (bInterrupted || this->IsFinalComboStep())
-	//{
-	//	this->ResetCombo();
-	//}
-	//else
-	//{
-	//	// Open combo window again for the next input
-	//	this->m_bIsComboWindowOpen = true;
-
-	//	// Set a timer to reset the combo if the player doesn't press attack again within a specific window
-	//	GetWorldTimerManager().SetTimer(ComboResetTimer, this, &ADeWarriorCharacter::ResetCombo, 1.0f, false);
-	//}
 }
 
 bool ADeWarriorCharacter::IsFinalComboStep() const
@@ -261,19 +249,5 @@ bool ADeWarriorCharacter::IsFinalComboStep() const
 void ADeWarriorCharacter::ResetCombo()
 {
 	this->m_curAttackCount = 0;
-	//this->m_bIsComboWindowOpen = false;
 	GetWorldTimerManager().ClearTimer(ComboResetTimer);
-}
-
-void ADeWarriorCharacter::ContinueCombo()
-{
-	//if (!this->IsFinalComboStep())
-	//{
-	//	this->m_curAttackCount ++ ;
-	//	this->ProceedAttackAnimation();
-	//}
-	//else
-	//{
-	//	this->ResetCombo();
-	//}
 }

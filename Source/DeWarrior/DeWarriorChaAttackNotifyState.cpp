@@ -27,15 +27,17 @@ void UDeWarriorChaAttackNotifyState::NotifyBegin(USkeletalMeshComponent* MeshCom
             GeneratedBoxCollider->RegisterComponent();
             GeneratedBoxCollider->SetWorldLocation(SocketLocation);
             GeneratedBoxCollider->SetWorldRotation(SocketRotation);
-            GeneratedBoxCollider->SetBoxExtent(FVector(20.0f, 10.0f, 40.0f)); // Adjust the box size as per your needs
+            GeneratedBoxCollider->SetBoxExtent(FVector(50.0f, 50.0f, 50.0f)); // Adjust the box size as per your needs
             GeneratedBoxCollider->AttachToComponent(MeshComp, FAttachmentTransformRules::KeepWorldTransform, SocketName);
 
             // Enable collision for the box
-            GeneratedBoxCollider->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-            GeneratedBoxCollider->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
+            GeneratedBoxCollider->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+            GeneratedBoxCollider->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
             GeneratedBoxCollider->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-            GeneratedBoxCollider->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+            GeneratedBoxCollider->SetCollisionResponseToChannel(ECC_Pawn, ECollisionResponse::ECR_Overlap);
         }
+
+        GeneratedBoxCollider->OnComponentBeginOverlap.AddDynamic(this, &UDeWarriorChaAttackNotifyState::OnHitboxOverlap);
     }
 }
 
@@ -55,6 +57,8 @@ void UDeWarriorChaAttackNotifyState::NotifyTick(USkeletalMeshComponent* MeshComp
 
 void UDeWarriorChaAttackNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
 {
+    GeneratedBoxCollider->OnComponentBeginOverlap.RemoveDynamic(this, &UDeWarriorChaAttackNotifyState::OnHitboxOverlap);
+
     if (GeneratedBoxCollider)
     {
         GeneratedBoxCollider->DestroyComponent();
@@ -63,6 +67,8 @@ void UDeWarriorChaAttackNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp,
 
 void UDeWarriorChaAttackNotifyState::OnHitboxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+    UE_LOG(LogTemp, Warning, TEXT("collided"));
+
     if (OtherActor && OtherActor->IsA(AAIAgent::StaticClass()))
     {
         OtherActor->Destroy();

@@ -25,11 +25,20 @@ public:
 
 	void ChaseTarget();
 
+	void LookAtTarget(float DeltaTime);
+
 	void AttackTarget();
+
+	UPROPERTY(BlueprintReadOnly, Category = "Movement")
+	FVector MovementDirection;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Movement")
+	float Speed;
 
 private:
 	AActor* targetActor;
 	float attackRange = 200.0f;
+	float RotationSpeed = 5.0f;
 
 	bool IsTargetWithinAttackRange();
 

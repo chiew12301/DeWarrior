@@ -37,6 +37,19 @@ void AAIAgent::Tick(float DeltaTime)
 	}
 
 	this->ChaseTarget();
+	this->LookAtTarget(DeltaTime);
+
+	Speed = GetVelocity().Size();
+
+	// Determine movement direction
+	if (Speed > 0)
+	{
+		MovementDirection = GetVelocity().GetSafeNormal();  // Get normalized movement direction
+	}
+	else
+	{
+		MovementDirection = FVector::ZeroVector;
+	}
 }
 
 void AAIAgent::ChaseTarget()
@@ -48,9 +61,29 @@ void AAIAgent::ChaseTarget()
 	}
 }
 
+void AAIAgent::LookAtTarget(float DeltaTime)
+{
+	if (this->targetActor)
+	{
+		// Find the direction to the player
+		FVector DirectionToPlayer = this->targetActor->GetActorLocation() - GetActorLocation();
+		DirectionToPlayer.Z = 0; // Ignore vertical difference for rotation
+		DirectionToPlayer.Normalize();
+
+		// Calculate the desired rotation
+		FRotator TargetRotation = FRotationMatrix::MakeFromX(DirectionToPlayer).Rotator();
+
+		// Interpolate between the current and target rotation for smooth turning
+		FRotator NewRotation = FMath::RInterpTo(GetActorRotation(), TargetRotation, DeltaTime, RotationSpeed);
+
+		// Apply the new rotation
+		SetActorRotation(NewRotation);
+	}
+}
+
 void AAIAgent::AttackTarget()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Attacking Player!"));
+	//UE_LOG(LogTemp, Warning, TEXT("Attacking Player!"));
 }
 
 bool AAIAgent::IsTargetWithinAttackRange()
