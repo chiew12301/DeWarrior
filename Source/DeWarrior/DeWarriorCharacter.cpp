@@ -15,6 +15,7 @@
 #include "OpenAttackNotify.h"
 #include "Sound/SoundCue.h"
 #include "Kismet/GameplayStatics.h"
+#include "CustomCameraShake.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -157,6 +158,8 @@ void ADeWarriorCharacter::Attack()
 
 	this->ProceedAttackAnimation();
 
+	this->PlayCameraShake();
+
 	if (!this->IsFinalComboStep())
 	{
 		this->m_curAttackCount++;
@@ -243,6 +246,21 @@ void ADeWarriorCharacter::OnComboMontageEnded(UAnimMontage* Montage, bool bInter
 bool ADeWarriorCharacter::IsFinalComboStep() const
 {
 	return this->m_curAttackCount >= this->m_MaxComboIndex - 1;
+}
+
+void ADeWarriorCharacter::PlayCameraShake()
+{
+	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	if (PlayerController != nullptr)
+	{
+		APlayerCameraManager* CameraManager = PlayerController->PlayerCameraManager;
+
+		if (CameraManager)
+		{
+			// Play the camera shake (UMyCameraShake is your custom camera shake class)
+			CameraManager->StartCameraShake(UCustomCameraShake::StaticClass());
+		}
+	}
 }
 
 

@@ -33,23 +33,16 @@ void AAIAgent::Tick(float DeltaTime)
 	if (this->IsTargetWithinAttackRange())
 	{
 		this->AttackTarget();
+		this->LookAtTarget(DeltaTime);
 		return;
 	}
 
 	this->ChaseTarget();
-	this->LookAtTarget(DeltaTime);
+	this->LookAtMovementDirection(DeltaTime);
+	//this->LookAtTarget(DeltaTime);
 
-	Speed = GetVelocity().Size();
-
-	// Determine movement direction
-	if (Speed > 0)
-	{
-		MovementDirection = GetVelocity().GetSafeNormal();  // Get normalized movement direction
-	}
-	else
-	{
-		MovementDirection = FVector::ZeroVector;
-	}
+	FVector Velocity = GetVelocity();
+	this->Speed = Velocity.Size();
 }
 
 void AAIAgent::ChaseTarget()
@@ -75,6 +68,27 @@ void AAIAgent::LookAtTarget(float DeltaTime)
 
 		// Interpolate between the current and target rotation for smooth turning
 		FRotator NewRotation = FMath::RInterpTo(GetActorRotation(), TargetRotation, DeltaTime, RotationSpeed);
+
+		// Apply the new rotation
+		SetActorRotation(NewRotation);
+	}
+}
+
+void AAIAgent::LookAtMovementDirection(float DeltaTime)
+{
+	FVector Velocity = GetVelocity();
+
+	// Ensure we only rotate if there's actual movement
+	if (Velocity.SizeSquared() > 0.f)
+	{
+		// Normalize the velocity to get the direction
+		FVector movdir = Velocity.GetSafeNormal();
+
+		// Calculate the target rotation to face the movement direction
+		FRotator TargetRotation = movdir.Rotation();
+
+		// Smoothly interpolate towards the target rotation
+		FRotator NewRotation = FMath::RInterpTo(GetActorRotation(), TargetRotation, DeltaTime, 5.0f);
 
 		// Apply the new rotation
 		SetActorRotation(NewRotation);

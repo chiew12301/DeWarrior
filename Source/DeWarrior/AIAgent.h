@@ -26,6 +26,7 @@ public:
 	void ChaseTarget();
 
 	void LookAtTarget(float DeltaTime);
+	void LookAtMovementDirection(float DeltaTime);
 
 	void AttackTarget();
 

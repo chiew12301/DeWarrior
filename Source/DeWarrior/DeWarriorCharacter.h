@@ -87,6 +87,8 @@ protected:
 	void OnComboMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 	bool IsFinalComboStep() const;
+
+	void PlayCameraShake();
 			
 protected:
 	// APawn interface
