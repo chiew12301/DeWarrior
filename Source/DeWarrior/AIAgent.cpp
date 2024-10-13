@@ -17,7 +17,8 @@ AAIAgent::AAIAgent()
 void AAIAgent::BeginPlay()
 {
 	Super::BeginPlay();
-	this->targetActor = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0); //This is only find the first player
+	this->targetActor = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+	this->animInstance = GetMesh()->GetAnimInstance();
 }
 
 // Called every frame
@@ -25,24 +26,24 @@ void AAIAgent::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (!this->targetActor)
-	{
-		return;
-	}
+	//if (!this->targetActor)
+	//{
+	//	return;
+	//}
 
-	if (this->IsTargetWithinAttackRange())
-	{
-		this->AttackTarget();
-		this->LookAtTarget(DeltaTime);
-		return;
-	}
+	//if (this->IsTargetWithinAttackRange())
+	//{
+	//	this->AttackTarget();
+	//	this->LookAtTarget(DeltaTime);
+	//	return;
+	//}
 
-	this->ChaseTarget();
-	this->LookAtMovementDirection(DeltaTime);
-	//this->LookAtTarget(DeltaTime);
+	//this->ChaseTarget();
+	//this->LookAtMovementDirection(DeltaTime);
+	////this->LookAtTarget(DeltaTime);
 
-	FVector Velocity = GetVelocity();
-	this->Speed = Velocity.Size();
+	//FVector Velocity = GetVelocity();
+	//this->Speed = Velocity.Size();
 }
 
 void AAIAgent::ChaseTarget()
@@ -98,6 +99,29 @@ void AAIAgent::LookAtMovementDirection(float DeltaTime)
 void AAIAgent::AttackTarget()
 {
 	//UE_LOG(LogTemp, Warning, TEXT("Attacking Player!"));
+	if (!this->targetActor || !this->animInstance || !this->attackMontage)
+	{
+		return;
+	}
+
+	this->animInstance->Montage_Play(this->attackMontage);
+	this->animInstance->OnMontageEnded.AddDynamic(this, &AAIAgent::OnAttackMontageEnded);
+}
+
+void AAIAgent::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	this->FinishAttack();
+}
+
+void AAIAgent::FinishAttack()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Finished Attack!"));
+	OnAttackFinished.Broadcast();
+
+	if (this->animInstance)
+	{
+		this->animInstance->OnMontageEnded.RemoveDynamic(this, &AAIAgent::OnAttackMontageEnded);
+	}
 }
 
 bool AAIAgent::IsTargetWithinAttackRange()

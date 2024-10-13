@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "AIAgent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAttackFinished);
+
 UCLASS()
 class DEWARRIOR_API AAIAgent : public ACharacter
 {
@@ -20,6 +22,12 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnAttackFinished OnAttackFinished;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	UAnimMontage* attackMontage;
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -28,7 +36,10 @@ public:
 	void LookAtTarget(float DeltaTime);
 	void LookAtMovementDirection(float DeltaTime);
 
+	UFUNCTION()
 	void AttackTarget();
+	UFUNCTION()
+	void FinishAttack();
 
 	UPROPERTY(BlueprintReadOnly, Category = "Movement")
 	FVector MovementDirection;
@@ -38,9 +49,17 @@ public:
 
 private:
 	AActor* targetActor;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	float attackRange = 200.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	float RotationSpeed = 5.0f;
 
+	UPROPERTY()
+	UAnimInstance* animInstance;
+
 	bool IsTargetWithinAttackRange();
+
+	UFUNCTION()
+	void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 };

@@ -12,5 +12,9 @@ class DEWARRIOR_API AAIAgentController : public AAIController
 	GENERATED_BODY()
 	
 public:
+	virtual void OnPossess(APawn* InPawn) override;
+
+	void StartBehaviorTree();
+
 	void MoveToTarget(AActor* target);
 };

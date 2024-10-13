@@ -89,6 +89,8 @@ protected:
 	bool IsFinalComboStep() const;
 
 	void PlayCameraShake();
+
+	void PlayLightCameraShake();
 			
 protected:
 	// APawn interface

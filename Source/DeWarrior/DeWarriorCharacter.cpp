@@ -16,6 +16,7 @@
 #include "Sound/SoundCue.h"
 #include "Kismet/GameplayStatics.h"
 #include "CustomCameraShake.h"
+#include "LightAttackCameraShake.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -158,14 +159,14 @@ void ADeWarriorCharacter::Attack()
 
 	this->ProceedAttackAnimation();
 
-	this->PlayCameraShake();
-
 	if (!this->IsFinalComboStep())
 	{
+		this->PlayLightCameraShake();
 		this->m_curAttackCount++;
 	}
 	else
 	{
+		this->PlayCameraShake();
 		this->ResetCombo();
 	}
 	UE_LOG(LogTemp, Warning, TEXT("Current Count: %d"), this->m_curAttackCount);
@@ -263,6 +264,20 @@ void ADeWarriorCharacter::PlayCameraShake()
 	}
 }
 
+void ADeWarriorCharacter::PlayLightCameraShake()
+{
+	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	if (PlayerController != nullptr)
+	{
+		APlayerCameraManager* CameraManager = PlayerController->PlayerCameraManager;
+
+		if (CameraManager)
+		{
+			// Play the camera shake (UMyCameraShake is your custom camera shake class)
+			CameraManager->StartCameraShake(ULightAttackCameraShake::StaticClass());
+		}
+	}
+}
 
 void ADeWarriorCharacter::ResetCombo()
 {
