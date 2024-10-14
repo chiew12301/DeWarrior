@@ -22,24 +22,31 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
+	//BTT Relatedd
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnAttackFinished OnAttackFinished;
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnAttackFinished OnChaseFinished;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	UAnimMontage* attackMontage;
 
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	//Chase Related
 	void ChaseTarget();
+	UFUNCTION()
+	void FinishChase();
 
-	void LookAtTarget(float DeltaTime);
-	void LookAtMovementDirection(float DeltaTime);
-
+	//Attack Related
 	UFUNCTION()
 	void AttackTarget();
 	UFUNCTION()
 	void FinishAttack();
+
+	//Rotation Relate
+	void LookAtTarget(float DeltaTime);
+	void LookAtMovementDirection(float DeltaTime);
 
 	UPROPERTY(BlueprintReadOnly, Category = "Movement")
 	FVector MovementDirection;
@@ -48,6 +55,8 @@ public:
 	float Speed;
 
 private:
+	bool doChase = false;
+
 	AActor* targetActor;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	float attackRange = 200.0f;
