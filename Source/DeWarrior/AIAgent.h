@@ -6,7 +6,8 @@
 #include "GameFramework/Character.h"
 #include "AIAgent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAttackFinished);
+DECLARE_DELEGATE_TwoParams(FOnChaseFinished, class AAIAgentController*, class UBehaviorTreeComponent*);
+DECLARE_DELEGATE_TwoParams(FOnAttackFinished, class AAIAgentController*, class UBehaviorTreeComponent*);
 
 UCLASS()
 class DEWARRIOR_API AAIAgent : public ACharacter
@@ -23,10 +24,8 @@ protected:
 
 public:	
 	//BTT Relatedd
-	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnAttackFinished OnAttackFinished;
-	UPROPERTY(BlueprintAssignable, Category = "Events")
-	FOnAttackFinished OnChaseFinished;
+	FOnChaseFinished OnChaseFinished;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	UAnimMontage* attackMontage;

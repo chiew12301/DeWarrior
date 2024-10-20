@@ -21,7 +21,7 @@ public:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 
 	UFUNCTION()
-	void OnAttackFinished();
+	void OnAttackFinished(AAIAgentController* controller, UBehaviorTreeComponent* bt);
 
 protected:
 	void FinishTask(UBehaviorTreeComponent* OwnerComp);

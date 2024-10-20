@@ -23,16 +23,18 @@ void AAIAgent::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (!this->doChase) return;
+	if (!this->doChase)	return;
 
 	if (!this->targetActor)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Target is empty!"));
 		this->FinishChase();
 		return;
 	}
 
 	if (this->IsTargetWithinAttackRange())
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Reached target!"));
 		this->FinishChase();
 		this->LookAtTarget(DeltaTime);
 		return;
@@ -51,13 +53,17 @@ void AAIAgent::Tick(float DeltaTime)
 
 void AAIAgent::ChaseTarget()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Chase START!"));
 	this->doChase = true;
 }
 
 void AAIAgent::FinishChase()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Chase Finish!L %s"), *this->GetName());
+
 	this->doChase = false;
-	this->OnChaseFinished.Broadcast();
+	AAIAgentController* AIController = Cast<AAIAgentController>(GetController());
+	this->OnChaseFinished.Execute(AIController, AIController->BehaviorTreeComp);
 }
 
 void AAIAgent::LookAtTarget(float DeltaTime)
@@ -105,7 +111,8 @@ void AAIAgent::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 void AAIAgent::FinishAttack()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Finished Attack!"));
-	OnAttackFinished.Broadcast();
+	AAIAgentController* AIController = Cast<AAIAgentController>(GetController());
+	this->OnAttackFinished.Execute(AIController, AIController->BehaviorTreeComp);
 
 	if (this->animInstance)
 	{
@@ -119,5 +126,7 @@ bool AAIAgent::IsTargetWithinAttackRange()
 		return false;
 
 	float distanceToTarget = FVector::Dist(GetActorLocation(), this->targetActor->GetActorLocation());
+	UE_LOG(LogTemp, Warning, TEXT("Distance to target for AI %s: %f"), *GetName(), distanceToTarget);
+
 	return distanceToTarget <= this->attackRange;
 }

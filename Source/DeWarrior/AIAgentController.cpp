@@ -8,12 +8,19 @@
 #include "GameFramework/Character.h"
 #include "NavigationSystem.h"
 
+AAIAgentController::AAIAgentController()
+{
+    this->BehaviorTreeComp = CreateDefaultSubobject<UBehaviorTreeComponent>(TEXT("BehaviorTreeComponent"));
+    this->BlackboardComp = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComponent"));
+}
+
 void AAIAgentController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 
 	if (InPawn)
 	{
+        this->mypawn = InPawn;
 		FTimerHandle timerHandle;
 		this->GetWorld()->GetTimerManager().SetTimer(timerHandle, this, &AAIAgentController::StartBehaviorTree, 0.2f, false);
 	}
@@ -21,27 +28,34 @@ void AAIAgentController::OnPossess(APawn* InPawn)
 
 void AAIAgentController::StartBehaviorTree()
 {
-    UBehaviorTree* BehaviorTree = LoadObject<UBehaviorTree>(nullptr, TEXT("/Game/AI/BehaviorTree/BT_AI"));
-
-    if (BehaviorTree)
+    this->myBehaviorTree = LoadObject<UBehaviorTree>(nullptr, TEXT("/Game/AI/BehaviorTree/BT_AI"));
+    
+    if (this->myBehaviorTree)
     {
-        RunBehaviorTree(BehaviorTree);
-
-        UBlackboardComponent* BlackboardComp = GetBlackboardComponent();
-        if (BlackboardComp)
+        if (UseBlackboard(myBehaviorTree->BlackboardAsset, BlackboardComp))
         {
-            ACharacter* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-            if (PlayerCharacter)
+            if (RunBehaviorTree(this->myBehaviorTree))
             {
-                UE_LOG(LogTemp, Warning, TEXT("Assigned Player To Attaack Target"));
-
-                BlackboardComp->SetValueAsObject(FName(TEXT("AttackTarget")), PlayerCharacter);
+                ACharacter* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+                if (PlayerCharacter)
+                {
+                    BlackboardComp->SetValueAsObject(FName(TEXT("AttackTarget")), PlayerCharacter);
+                    UE_LOG(LogTemp, Warning, TEXT("Assigned Player to Attack Target for AI: %s"), *mypawn->GetName());
+                }
             }
+            else
+            {
+                UE_LOG(LogTemp, Warning, TEXT("Failed to run behavior tree for AI: %s"), *mypawn->GetName());
+            }
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Failed to initialize blackboard for AI: %s"), *mypawn->GetName());
         }
     }
     else
     {
-        UE_LOG(LogTemp, Warning, TEXT("No Behavior Tree found"));
+        UE_LOG(LogTemp, Warning, TEXT("No Behavior Tree found for AI: %s"), *mypawn->GetName());
     }
 }
 

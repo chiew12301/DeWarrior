@@ -18,7 +18,7 @@ public:
 	UBTT_ChaseTarget();
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 	UFUNCTION()
-	void OnChaseFinished();
+	void OnChaseFinished(AAIAgentController* controller, UBehaviorTreeComponent* bt);
 protected:
 	void FinishTask(UBehaviorTreeComponent* OwnerComp);
 
