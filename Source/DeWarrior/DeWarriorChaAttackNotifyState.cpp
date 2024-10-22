@@ -6,6 +6,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "DrawDebugHelpers.h"
 #include "GameFramework/Actor.h"
+#include "AIInterface.h"
 #include "Engine/World.h"
 
 void UDeWarriorChaAttackNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration)
@@ -69,10 +70,17 @@ void UDeWarriorChaAttackNotifyState::OnHitboxOverlap(UPrimitiveComponent* Overla
 {
     UE_LOG(LogTemp, Warning, TEXT("collided"));
 
-    if (OtherActor && OtherActor->IsA(AAIAgent::StaticClass()))
+    if (OtherActor)
     {
-        OtherActor->Destroy();
-        UE_LOG(LogTemp, Warning, TEXT("AIAgent destroyed!"));
+        IAIInterface* AIInterface = Cast<IAIInterface>(OtherActor);
+        if (AIInterface)
+        {
+            AIInterface->ReceivedDamage(1.0f);
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("OtherActor does not implement IAIInterface"));
+        }
     }
 }
 

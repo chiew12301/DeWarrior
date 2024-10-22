@@ -10,6 +10,26 @@
 AAIAgent::AAIAgent()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	this->currentHealth = 10.0f;
+}
+
+void AAIAgent::ReceivedDamage(float damage)
+{
+	if (!this->bCanReceiveDamage) return;
+
+	//UE_LOG(LogTemp, Warning, TEXT("Received Damage, Current Health: %s"), this->currentHealth);
+
+	this->currentHealth -= damage;
+	this->bCanReceiveDamage = false;
+	UE_LOG(LogTemp, Warning, TEXT("Current Health: %f"), this->currentHealth);
+
+	if (this->currentHealth <= 0.0f)
+	{
+		this->Destroy();
+		return;
+	}
+
+	GetWorld()->GetTimerManager().SetTimer(DamageCooldownTimer, this, &AAIAgent::ResetDamageColdDown, 2.0f, false);
 }
 
 void AAIAgent::BeginPlay()
@@ -129,4 +149,9 @@ bool AAIAgent::IsTargetWithinAttackRange()
 	UE_LOG(LogTemp, Warning, TEXT("Distance to target for AI %s: %f"), *GetName(), distanceToTarget);
 
 	return distanceToTarget <= this->attackRange;
+}
+
+void AAIAgent::ResetDamageColdDown()
+{
+	this->bCanReceiveDamage = true;
 }

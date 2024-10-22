@@ -4,19 +4,22 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "AIInterface.h"
 #include "AIAgent.generated.h"
 
 DECLARE_DELEGATE_TwoParams(FOnChaseFinished, class AAIAgentController*, class UBehaviorTreeComponent*);
 DECLARE_DELEGATE_TwoParams(FOnAttackFinished, class AAIAgentController*, class UBehaviorTreeComponent*);
 
 UCLASS()
-class DEWARRIOR_API AAIAgent : public ACharacter
+class DEWARRIOR_API AAIAgent : public ACharacter, public IAIInterface
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this character's properties
 	AAIAgent();
+
+	virtual void ReceivedDamage(float damage) override;
 
 protected:
 	// Called when the game starts or when spawned
@@ -55,6 +58,8 @@ public:
 
 private:
 	bool doChase = false;
+	bool bCanReceiveDamage = true;
+	FTimerHandle DamageCooldownTimer;
 
 	AActor* targetActor;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
@@ -66,6 +71,8 @@ private:
 	UAnimInstance* animInstance;
 
 	bool IsTargetWithinAttackRange();
+
+	void ResetDamageColdDown();
 
 	UFUNCTION()
 	void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
