@@ -65,6 +65,25 @@ ADeWarriorCharacter::ADeWarriorCharacter()
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
 
+void ADeWarriorCharacter::ReceivedDamage(float damage)
+{
+	if (!this->bCanReceiveDamage) return;
+
+	//UE_LOG(LogTemp, Warning, TEXT("Received Damage, Current Health: %s"), this->currentHealth);
+
+	this->currentHealth -= damage;
+	this->bCanReceiveDamage = false;
+	UE_LOG(LogTemp, Warning, TEXT("Player Health: %f"), this->currentHealth);
+
+	if (this->currentHealth <= 0.0f)
+	{
+		this->Destroy();
+		return;
+	}
+
+	GetWorld()->GetTimerManager().SetTimer(DamageCooldownTimer, this, &ADeWarriorCharacter::ResetDamageColdDown, 2.0f, false);
+}
+
 void ADeWarriorCharacter::BeginPlay()
 {
 	// Call the base class  
@@ -85,6 +104,11 @@ void ADeWarriorCharacter::OnAnimationNotify()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Notify:Open Attack!"));
 	this->m_bIsComboWindowOpen = true;
+}
+
+void ADeWarriorCharacter::ResetDamageColdDown()
+{
+	this->bCanReceiveDamage = true;
 }
 
 //////////////////////////////////////////////////////////////////////////

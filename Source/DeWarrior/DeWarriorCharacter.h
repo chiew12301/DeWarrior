@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "Sound/SoundCue.h"
+#include "DeWarriorCharacterInterface.h"
 #include "DeWarriorCharacter.generated.h"
 
 class USpringArmComponent;
@@ -17,7 +18,7 @@ struct FInputActionValue;
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 UCLASS(config=Game)
-class ADeWarriorCharacter : public ACharacter
+class ADeWarriorCharacter : public ACharacter, public IDeWarriorCharacterInterface
 {
 	GENERATED_BODY()
 
@@ -57,6 +58,9 @@ public:
 	TArray<USoundCue*> ComboSounds;
 
 	ADeWarriorCharacter();
+
+	virtual void ReceivedDamage(float damage) override;
+
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
 	int m_curAttackCount;
@@ -106,5 +110,10 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+private:
+	bool bCanReceiveDamage = true;
+	FTimerHandle DamageCooldownTimer;
+	void ResetDamageColdDown();
 };
 

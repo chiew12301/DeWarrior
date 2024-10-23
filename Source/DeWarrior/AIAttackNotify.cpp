@@ -1,14 +1,14 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "DeWarriorChaAttackNotifyState.h"
+#include "AIAttackNotify.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "DrawDebugHelpers.h"
 #include "GameFramework/Actor.h"
-#include "AIInterface.h"
+#include "DeWarriorCharacterInterface.h"
 #include "Engine/World.h"
 
-void UDeWarriorChaAttackNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration)
+void UAIAttackNotify::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration)
 {
     if (!MeshComp || !MeshComp->GetOwner()) return;
 
@@ -37,11 +37,12 @@ void UDeWarriorChaAttackNotifyState::NotifyBegin(USkeletalMeshComponent* MeshCom
             GeneratedBoxCollider->SetCollisionResponseToChannel(ECC_Pawn, ECollisionResponse::ECR_Overlap);
         }
 
-        GeneratedBoxCollider->OnComponentBeginOverlap.AddDynamic(this, &UDeWarriorChaAttackNotifyState::OnHitboxOverlap);
+        GeneratedBoxCollider->OnComponentBeginOverlap.AddDynamic(this, &UAIAttackNotify::OnHitboxOverlap);
     }
+
 }
 
-void UDeWarriorChaAttackNotifyState::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float FrameDeltaTime)
+void UAIAttackNotify::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float FrameDeltaTime)
 {
     if (!MeshComp || !GeneratedBoxCollider) return;
 
@@ -55,9 +56,9 @@ void UDeWarriorChaAttackNotifyState::NotifyTick(USkeletalMeshComponent* MeshComp
     DrawDebugHitbox(MeshComp);
 }
 
-void UDeWarriorChaAttackNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
+void UAIAttackNotify::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
 {
-    GeneratedBoxCollider->OnComponentBeginOverlap.RemoveDynamic(this, &UDeWarriorChaAttackNotifyState::OnHitboxOverlap);
+    GeneratedBoxCollider->OnComponentBeginOverlap.RemoveDynamic(this, &UAIAttackNotify::OnHitboxOverlap);
 
     if (GeneratedBoxCollider)
     {
@@ -65,25 +66,24 @@ void UDeWarriorChaAttackNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp,
     }
 }
 
-void UDeWarriorChaAttackNotifyState::OnHitboxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void UAIAttackNotify::OnHitboxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
     UE_LOG(LogTemp, Warning, TEXT("collided"));
-
     if (OtherActor)
     {
-        IAIInterface* AIInterface = Cast<IAIInterface>(OtherActor);
-        if (AIInterface)
+        IDeWarriorCharacterInterface* playerInterface = Cast<IDeWarriorCharacterInterface>(OtherActor);
+        if (playerInterface)
         {
-            AIInterface->ReceivedDamage(1.0f);
+            playerInterface->ReceivedDamage(1.0f);
         }
         else
         {
-            UE_LOG(LogTemp, Warning, TEXT("OtherActor does not implement IAIInterface"));
+            UE_LOG(LogTemp, Warning, TEXT("OtherActor does not implement IDeWarriorCharacterInterface"));
         }
     }
 }
 
-void UDeWarriorChaAttackNotifyState::DrawDebugHitbox(USkeletalMeshComponent* MeshComp)
+void UAIAttackNotify::DrawDebugHitbox(USkeletalMeshComponent* MeshComp)
 {
     if (!MeshComp || !GeneratedBoxCollider) return;
 
