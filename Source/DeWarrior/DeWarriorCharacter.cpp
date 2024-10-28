@@ -17,6 +17,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "CustomCameraShake.h"
 #include "LightAttackCameraShake.h"
+#include "HealthBarWidget.h"
+#include <Components/WidgetComponent.h>
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -63,6 +65,22 @@ ADeWarriorCharacter::ADeWarriorCharacter()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+	static ConstructorHelpers::FClassFinder<UUserWidget> HealthWidgetBPClass(TEXT("/Game/Widget/WBP_HealthBar.WBP_HealthBar_C"));
+	if (HealthWidgetBPClass.Succeeded())
+	{
+		HealthWidgetClass = HealthWidgetBPClass.Class;
+	}
+	this->healthWidgetComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("HealthBarWidget"));
+	this->healthWidgetComp->SetupAttachment(this->RootComponent);
+	this->healthWidgetComp->SetWidgetSpace(EWidgetSpace::World);
+
+	if (HealthWidgetClass)
+	{
+		this->healthWidgetComp->SetWidgetClass(HealthWidgetClass);
+	}
+
+	this->maxHealth = 5.0f;
+	this->currentHealth = this->maxHealth;
 }
 
 void ADeWarriorCharacter::ReceivedDamage(float damage)
@@ -74,6 +92,15 @@ void ADeWarriorCharacter::ReceivedDamage(float damage)
 	this->currentHealth -= damage;
 	this->bCanReceiveDamage = false;
 	UE_LOG(LogTemp, Warning, TEXT("Player Health: %f"), this->currentHealth);
+
+	if (this->healthWidgetComp)
+	{
+		UHealthBarWidget* healthbarCast = Cast<UHealthBarWidget>(this->healthWidgetComp->GetUserWidgetObject());
+		if (healthbarCast)
+		{
+			healthbarCast->UpdateHealthBar(this->currentHealth, this->maxHealth);
+		}
+	}
 
 	if (this->currentHealth <= 0.0f)
 	{
@@ -97,12 +124,21 @@ void ADeWarriorCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+
+	if (this->healthWidgetComp)
+	{
+		UHealthBarWidget* healthbarCast = Cast<UHealthBarWidget>(this->healthWidgetComp->GetUserWidgetObject());
+		if (healthbarCast)
+		{
+			healthbarCast->UpdateHealthBar(this->currentHealth, this->maxHealth);
+		}
+	}
 }
 
 
 void ADeWarriorCharacter::OnAnimationNotify()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Notify:Open Attack!"));
+	//UE_LOG(LogTemp, Warning, TEXT("Notify:Open Attack!"));
 	this->m_bIsComboWindowOpen = true;
 }
 
@@ -134,7 +170,7 @@ void ADeWarriorCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	}
 	else
 	{
-		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
+		//UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
 }
 
@@ -176,10 +212,10 @@ void ADeWarriorCharacter::Look(const FInputActionValue& Value)
 
 void ADeWarriorCharacter::Attack()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Triggered: Attack"));
+	//UE_LOG(LogTemp, Warning, TEXT("Triggered: Attack"));
 
 	if (!this->m_bIsComboWindowOpen) return;
-	UE_LOG(LogTemp, Warning, TEXT("Register: Attack"));
+	//UE_LOG(LogTemp, Warning, TEXT("Register: Attack"));
 
 	this->ProceedAttackAnimation();
 
@@ -193,14 +229,14 @@ void ADeWarriorCharacter::Attack()
 		this->PlayCameraShake();
 		this->ResetCombo();
 	}
-	UE_LOG(LogTemp, Warning, TEXT("Current Count: %d"), this->m_curAttackCount);
+	//UE_LOG(LogTemp, Warning, TEXT("Current Count: %d"), this->m_curAttackCount);
 }
 
 void ADeWarriorCharacter::ProceedAttackAnimation()
 {
 	if (ComboMontages.IsValidIndex(this->m_curAttackCount) && ComboMontages[this->m_curAttackCount])
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Animation Play: %d"), this->m_curAttackCount);
+		//UE_LOG(LogTemp, Warning, TEXT("Animation Play: %d"), this->m_curAttackCount);
 		// Play the montage corresponding to the current combo step
 		UAnimMontage* CurrentMontage = ComboMontages[this->m_curAttackCount];
 
@@ -236,7 +272,7 @@ void ADeWarriorCharacter::ProceedAttackAnimation()
 
 void ADeWarriorCharacter::OnComboMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Montage Ended"));
+	///UE_LOG(LogTemp, Warning, TEXT("Montage Ended"));
 	int checkCount = 0;
 
 	if (this->m_curAttackCount > 0)
@@ -253,12 +289,12 @@ void ADeWarriorCharacter::OnComboMontageEnded(UAnimMontage* Montage, bool bInter
 		this->m_bIsComboWindowOpen = true;
 		if (!bInterrupted)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Montage Play Completed, Reset Combo"));
+			//UE_LOG(LogTemp, Warning, TEXT("Montage Play Completed, Reset Combo"));
 			this->ResetCombo();
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Montage Interupted do attack"));
+			//UE_LOG(LogTemp, Warning, TEXT("Montage Interupted do attack"));
 		}
 
 		if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())

@@ -6,11 +6,30 @@
 #include "Kismet/GameplayStatics.h"
 #include "NavigationSystem.h"
 #include "AIController.h"
+#include "HealthBarWidget.h"
+#include <Components/WidgetComponent.h>
 
 AAIAgent::AAIAgent()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	this->currentHealth = 10.0f;
+
+	static ConstructorHelpers::FClassFinder<UUserWidget> HealthWidgetBPClass(TEXT("/Game/Widget/WBP_HealthBar.WBP_HealthBar_C"));
+	if (HealthWidgetBPClass.Succeeded())
+	{
+		HealthWidgetClass = HealthWidgetBPClass.Class;
+	}
+
+	this->healthWidgetComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("HealthBarWidget"));
+	this->healthWidgetComp->SetupAttachment(this->RootComponent);
+	this->healthWidgetComp->SetWidgetSpace(EWidgetSpace::World);
+
+	if (HealthWidgetClass)
+	{
+		this->healthWidgetComp->SetWidgetClass(HealthWidgetClass);
+	}
+
+	this->maxHealth = 5.0f;
+	this->currentHealth = this->maxHealth;
 }
 
 void AAIAgent::ReceivedDamage(float damage)
@@ -22,6 +41,16 @@ void AAIAgent::ReceivedDamage(float damage)
 	this->currentHealth -= damage;
 	this->bCanReceiveDamage = false;
 	UE_LOG(LogTemp, Warning, TEXT("Current Health: %f"), this->currentHealth);
+
+	if (this->healthWidgetComp)
+	{
+		UHealthBarWidget* healthbarCast = Cast<UHealthBarWidget>(this->healthWidgetComp->GetUserWidgetObject());
+		if (healthbarCast)
+		{
+			healthbarCast->UpdateHealthBar(this->currentHealth, this->maxHealth);
+		}
+	}
+
 
 	if (this->currentHealth <= 0.0f)
 	{
@@ -37,24 +66,40 @@ void AAIAgent::BeginPlay()
 	Super::BeginPlay();
 	this->targetActor = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
 	this->animInstance = GetMesh()->GetAnimInstance();
+
+	if (this->healthWidgetComp)
+	{
+		UHealthBarWidget* healthbarCast = Cast<UHealthBarWidget>(this->healthWidgetComp->GetUserWidgetObject());
+		if (healthbarCast)
+		{
+			healthbarCast->UpdateHealthBar(this->currentHealth, this->maxHealth);
+		}
+	}
 }
 
 void AAIAgent::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (this->healthWidgetComp)
+	{
+		FVector CameraLocation = GetWorld()->GetFirstPlayerController()->PlayerCameraManager->GetCameraLocation();
+		FRotator LookAtRotation = (CameraLocation - this->healthWidgetComp->GetComponentLocation()).Rotation();
+		this->healthWidgetComp->SetWorldRotation(LookAtRotation);
+	}
+
 	if (!this->doChase)	return;
 
 	if (!this->targetActor)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Target is empty!"));
+		//UE_LOG(LogTemp, Warning, TEXT("Target is empty!"));
 		this->FinishChase();
 		return;
 	}
 
 	if (this->IsTargetWithinAttackRange())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Reached target!"));
+		//UE_LOG(LogTemp, Warning, TEXT("Reached target!"));
 		this->FinishChase();
 		this->LookAtTarget(DeltaTime);
 		return;
@@ -73,13 +118,13 @@ void AAIAgent::Tick(float DeltaTime)
 
 void AAIAgent::ChaseTarget()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Chase START!"));
+	//UE_LOG(LogTemp, Warning, TEXT("Chase START!"));
 	this->doChase = true;
 }
 
 void AAIAgent::FinishChase()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Chase Finish!L %s"), *this->GetName());
+	//UE_LOG(LogTemp, Warning, TEXT("Chase Finish!L %s"), *this->GetName());
 
 	this->doChase = false;
 	AAIAgentController* AIController = Cast<AAIAgentController>(GetController());
@@ -130,7 +175,7 @@ void AAIAgent::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 
 void AAIAgent::FinishAttack()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Finished Attack!"));
+	//UE_LOG(LogTemp, Warning, TEXT("Finished Attack!"));
 	AAIAgentController* AIController = Cast<AAIAgentController>(GetController());
 	this->OnAttackFinished.Execute(AIController, AIController->BehaviorTreeComp);
 
@@ -146,7 +191,7 @@ bool AAIAgent::IsTargetWithinAttackRange()
 		return false;
 
 	float distanceToTarget = FVector::Dist(GetActorLocation(), this->targetActor->GetActorLocation());
-	UE_LOG(LogTemp, Warning, TEXT("Distance to target for AI %s: %f"), *GetName(), distanceToTarget);
+	//UE_LOG(LogTemp, Warning, TEXT("Distance to target for AI %s: %f"), *GetName(), distanceToTarget);
 
 	return distanceToTarget <= this->attackRange;
 }

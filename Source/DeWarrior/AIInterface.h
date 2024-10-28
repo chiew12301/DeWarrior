@@ -23,6 +23,7 @@ class DEWARRIOR_API IAIInterface
 public:
 	virtual void ReceivedDamage(float damage);
 
+	float maxHealth;
 protected:
 	float currentHealth;
 };

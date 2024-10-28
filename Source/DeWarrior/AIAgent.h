@@ -25,6 +25,11 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	UPROPERTY(VisibleAnywhere)
+	class UWidgetComponent* healthWidgetComp;
+
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UUserWidget> HealthWidgetClass;
 public:	
 	//BTT Relatedd
 	FOnAttackFinished OnAttackFinished;
@@ -56,6 +61,8 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Movement")
 	float Speed;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health Relatedd")
+	float initialHealth;
 private:
 	bool doChase = false;
 	bool bCanReceiveDamage = true;

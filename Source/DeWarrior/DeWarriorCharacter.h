@@ -62,6 +62,9 @@ public:
 	virtual void ReceivedDamage(float damage) override;
 
 protected:
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UUserWidget> HealthWidgetClass;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
 	int m_curAttackCount;
 
@@ -105,11 +108,17 @@ protected:
 	
 	void OnAnimationNotify();
 
+	UPROPERTY(VisibleAnywhere)
+	class UWidgetComponent* healthWidgetComp;
+
 public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health Relatedd")
+	float initialHealth;
 
 private:
 	bool bCanReceiveDamage = true;
